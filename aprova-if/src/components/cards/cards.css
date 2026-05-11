@@ -1,0 +1,8 @@
+.default-card {
+  padding: 32px;
+  transition: var(--transition);
+}
+
+.default-card:hover {
+  transform: translateY(-4px);
+}

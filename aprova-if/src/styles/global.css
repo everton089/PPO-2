@@ -1,0 +1,83 @@
+:root {
+  --primary: #00843d;
+  --primary-dark: #00652f;
+  --primary-light: #00a94f;
+
+  --background: #f6f8fb;
+  --surface: #ffffff;
+
+  --text: #1f2937;
+  --text-light: #6b7280;
+
+  --border: #dbe2ea;
+
+  --shadow: 0 8px 24px rgba(0,0,0,0.06);
+
+  --radius: 18px;
+
+  --transition: 0.2s;
+
+  --container: 1250px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+
+  background: var(--background);
+  color: var(--text);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+
+  margin: 0 auto;
+
+  padding: 0 24px;
+}
+
+.section {
+  padding: 100px 0;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.btn {
+  border: none;
+
+  cursor: pointer;
+
+  transition: var(--transition);
+
+  border-radius: 14px;
+}
