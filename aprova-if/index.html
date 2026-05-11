@@ -1,19 +1,250 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Aprova IF</title>
 
+  <!-- GLOBAL -->
+
+  <link rel="stylesheet" href="./styles/reset.css">
+  <link rel="stylesheet" href="./styles/variables.css">
+  <link rel="stylesheet" href="./styles/global.css">
+
+  <!-- COMPONENTS -->
+
+  <link rel="stylesheet" href="./components/header/header.css">
+  <link rel="stylesheet" href="./components/buttons/button.css">
+  <link rel="stylesheet" href="./components/cards/cards.css">
+  <link rel="stylesheet" href="./components/stats/stats.css">
+
+  <!-- PAGE -->
+
+  <link rel="stylesheet" href="./pages/home/home.css">
+
+  <!-- FONT -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+    rel="stylesheet"
+  >
 
-  <script type="module" src="/src/main.ts"></script>
 </head>
+
 <body>
-  <div id="app"></div>
+
+  <!-- HEADER -->
+
+  <header class="header">
+
+    <div class="container header-content">
+
+      <div class="logo">
+
+        <div class="logo-icon">
+          A
+        </div>
+
+        <div>
+          <h1>Aprova IF</h1>
+          <p>Simulados IFC</p>
+        </div>
+
+      </div>
+
+      <nav class="nav">
+
+        <a href="#">Início</a>
+        <a href="#">Simulados</a>
+        <a href="#">Ranking</a>
+        <a href="#">Estatísticas</a>
+
+      </nav>
+
+      <div class="header-buttons">
+
+        <button class="btn-secondary">
+          Entrar
+        </button>
+
+        <button class="btn-primary">
+          Criar Conta
+        </button>
+
+      </div>
+
+    </div>
+
+  </header>
+
+  <!-- HERO -->
+
+  <section class="hero">
+
+    <div class="container hero-content">
+
+      <div class="hero-left">
+
+        <span class="hero-badge">
+          Plataforma Educacional
+        </span>
+
+        <h1>
+          Estude para o IFC
+          de forma moderna.
+        </h1>
+
+        <p>
+          Resolva simulados, acompanhe seu desempenho
+          e evolua seus estudos com uma plataforma
+          prática e acessível.
+        </p>
+
+        <div class="hero-actions">
+
+          <button class="btn-primary btn-lg">
+            Fazer Simulado
+          </button>
+
+          <button class="btn-outline btn-lg">
+            Ver Ranking
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="hero-right">
+
+        <div class="stat-card">
+
+          <h2>120+</h2>
+
+          <p>Simulados</p>
+
+        </div>
+
+        <div class="stat-card">
+
+          <h2>3.2k</h2>
+
+          <p>Usuários</p>
+
+        </div>
+
+        <div class="stat-card">
+
+          <h2>82%</h2>
+
+          <p>Aprovação</p>
+
+        </div>
+
+        <div class="stat-card">
+
+          <h2>74%</h2>
+
+          <p>Média Geral</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- FEATURES -->
+
+  <section class="features section">
+
+    <div class="container">
+
+      <div class="section-header">
+
+        <span>
+          Recursos da Plataforma
+        </span>
+
+        <h2>
+          Tudo que você precisa
+          para conquistar sua vaga
+        </h2>
+
+      </div>
+
+      <div class="cards-grid">
+
+        <div class="feature-card">
+
+          <div class="card-icon">
+            📘
+          </div>
+
+          <h3>Simulados completos</h3>
+
+          <p>
+            Provas antigas e inéditas com correção automática.
+          </p>
+
+        </div>
+
+        <div class="feature-card">
+
+          <div class="card-icon">
+            📊
+          </div>
+
+          <h3>Estatísticas</h3>
+
+          <p>
+            Acompanhe seu desempenho detalhadamente.
+          </p>
+
+        </div>
+
+        <div class="feature-card">
+
+          <div class="card-icon">
+            🏆
+          </div>
+
+          <h3>Ranking</h3>
+
+          <p>
+            Compare seus resultados com outros estudantes.
+          </p>
+
+        </div>
+
+        <div class="feature-card">
+
+          <div class="card-icon">
+            🎯
+          </div>
+
+          <h3>Foco nos estudos</h3>
+
+          <p>
+            Interface limpa e focada na aprendizagem.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
 </body>
 </html>
