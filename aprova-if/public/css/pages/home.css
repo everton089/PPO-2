@@ -1,0 +1,154 @@
+.hero {
+
+    min-height: calc(100vh - 90px);
+
+    background:
+    linear-gradient(
+    135deg,
+    #006b3f,
+    #00995d
+    );
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+.hero-container {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 80px;
+
+    align-items: center;
+
+}
+
+.badge {
+
+    display: inline-block;
+
+    padding: 12px 18px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.15);
+
+    color: white;
+
+    margin-bottom: 20px;
+
+}
+
+.hero-content h1 {
+
+    color: white;
+
+    font-size: 72px;
+
+    line-height: 1.1;
+
+}
+
+.hero-content p {
+
+    margin-top: 24px;
+
+    color: rgba(255,255,255,.85);
+
+    font-size: 20px;
+
+    line-height: 1.7;
+
+}
+
+.hero-buttons {
+
+    margin-top: 40px;
+
+    display: flex;
+
+    gap: 16px;
+
+}
+
+.hero-stats {
+
+    display: grid;
+
+    grid-template-columns: repeat(2,1fr);
+
+    gap: 20px;
+
+}
+
+.glass-card {
+
+    padding: 40px;
+
+    border-radius: 28px;
+
+    backdrop-filter: blur(10px);
+
+    background: rgba(255,255,255,.10);
+
+    border: 1px solid rgba(255,255,255,.15);
+
+}
+
+.glass-card h2 {
+
+    color: white;
+
+    font-size: 52px;
+
+}
+
+.glass-card p {
+
+    color: rgba(255,255,255,.8);
+
+}
+
+.features {
+
+    padding: 120px 0;
+
+}
+
+.section-title {
+
+    text-align: center;
+
+    margin-bottom: 60px;
+
+}
+
+.section-title span {
+
+    color: var(--primary);
+
+    font-weight: 700;
+
+}
+
+.section-title h2 {
+
+    margin-top: 20px;
+
+    font-size: 48px;
+
+}
+
+.features-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(4,1fr);
+
+    gap: 24px;
+
+}

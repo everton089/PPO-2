@@ -1,0 +1,46 @@
+.btn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    height: 52px;
+
+    padding: 0 28px;
+
+    border-radius: 16px;
+
+    font-weight: 600;
+    font-size: 0.95rem;
+
+    text-decoration: none;
+
+    font-family: inherit;
+
+    border: none;
+
+    cursor: pointer;
+
+    transition: all .25s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text-primary);
+}
+
+.btn-outline {
+    border: 1px solid white;
+    color: white;
+    background: transparent;
+}

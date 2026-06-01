@@ -1,0 +1,31 @@
+.feature-card {
+
+    background: white;
+
+    padding: 40px;
+
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+}
+
+.feature-card h3 {
+
+    margin-top: 20px;
+
+}
+
+.feature-card p {
+
+    margin-top: 10px;
+
+    color: var(--text-light);
+
+}
+
+.icon {
+
+    font-size: 40px;
+
+}
