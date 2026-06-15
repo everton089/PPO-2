@@ -1,76 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
 
-  <title>Login - Aprova IF</title>
+    <title>Login - Aprova IF</title>
 
-  <link rel="stylesheet" href="/css/reset.css">
-  <link rel="stylesheet" href="/css/variables.css">
-  <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/css/variables.css" />
+    <link rel="stylesheet" href="/css/global.css" />
 
-  <link rel="stylesheet" href="/css/components/buttons.css">
-  <link rel="stylesheet" href="/css/components/forms.css">
+    <link rel="stylesheet" href="/css/components/buttons.css" />
+    <link rel="stylesheet" href="/css/components/forms.css" />
 
-  <link rel="stylesheet" href="/css/pages/login.css">
-</head>
+    <link rel="stylesheet" href="/css/pages/login.css" />
+  </head>
 
-<body>
+  <body>
+    <main class="auth-page">
+      <div class="auth-card">
+        <h1>Aprova IF</h1>
 
-  <main class="auth-page">
+        <p>Entre para continuar seus estudos.</p>
 
-    <div class="auth-card">
+        <form>
+          <div class="form-group">
+            <label>E-mail</label>
 
-      <h1>Aprova IF</h1>
+            <input type="email" placeholder="Digite seu e-mail" />
+          </div>
 
-      <p>
-        Entre para continuar seus estudos.
-      </p>
+          <div class="form-group">
+            <label>Senha</label>
 
-      <form>
+            <input type="password" placeholder="Digite sua senha" />
+          </div>
 
-        <div class="form-group">
-          <label>E-mail</label>
+          <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+        </form>
 
-          <input
-            type="email"
-            placeholder="Digite seu e-mail"
-          >
+        <div class="auth-footer">
+          <span> Não possui conta? </span>
+
+          <a href="/cadastro"> Criar Conta </a>
         </div>
-
-        <div class="form-group">
-          <label>Senha</label>
-
-          <input
-            type="password"
-            placeholder="Digite sua senha"
-          >
-        </div>
-
-        <button
-          type="submit"
-          class="btn btn-primary btn-full"
-        >
-          Entrar
-        </button>
-
-      </form>
-
-      <div class="auth-footer">
-
-        <span>
-          Não possui conta?
-        </span>
-
-        <a href="/cadastro">
-          Criar Conta
-        </a>
-
       </div>
-
-    </div>
-
-  </main>
-
-</body>
+    </main>
+  </body>
 </html>

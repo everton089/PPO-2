@@ -1,4 +1,4 @@
-import { TodoList } from "./core.ts";
+import { TodoList } from "./BD.ts";
 import path from "path";
 
 const todo = new TodoList();

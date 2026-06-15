@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Estatísticas - Aprova IF</title>
+
+    <link rel="stylesheet" href="./css/reset.css" />
+    <link rel="stylesheet" href="./css/variables.css" />
+    <link rel="stylesheet" href="./css/global.css" />
+
+    <link rel="stylesheet" href="./css/components/header.css" />
+    <link rel="stylesheet" href="./css/components/buttons.css" />
+    <link rel="stylesheet" href="./css/components/cards.css" />
+    <link rel="stylesheet" href="./css/components/footer.css" />
+
+    <link rel="stylesheet" href="./css/pages/estatisticas.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="container header-container">
+        <div class="logo">
+          <div class="logo-square">A</div>
+
+          <div>
+            <h2>Aprova IF</h2>
+
+            <span> Instituto Federal Catarinense </span>
+          </div>
+        </div>
+
+        <nav class="navbar">
+          <a href="/">Início</a>
+          <a href="/simulados">Simulados</a>
+          <a href="/ranking">Ranking</a>
+          <a href="/estatisticas">Estatísticas</a>
+        </nav>
+
+        <div class="header-actions">
+          <a href="/perfil" class="btn btn-secondary"> Meu Perfil </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="dashboard-hero">
+        <div class="container">
+          <span class="badge"> Estatísticas </span>
+
+          <h1>Seu Desempenho</h1>
+
+          <p>
+            Acompanhe sua evolução, identifique seus pontos fortes e descubra
+            onde melhorar para alcançar sua aprovação.
+          </p>
+        </div>
+      </section>
+
+      <section class="stats-overview">
+        <div class="container stats-grid">
+          <div class="stat-card">
+            <span> Simulados Realizados </span>
+
+            <h2>48</h2>
+          </div>
+
+          <div class="stat-card">
+            <span> Média Geral </span>
+
+            <h2>78%</h2>
+          </div>
+
+          <div class="stat-card">
+            <span> Questões Respondidas </span>
+
+            <h2>2.384</h2>
+          </div>
+
+          <div class="stat-card">
+            <span> Ranking Geral </span>
+
+            <h2>#14</h2>
+          </div>
+        </div>
+      </section>
+
+      <section class="charts-section">
+        <div class="container">
+          <div class="chart-card chart-large">
+            <div class="card-header">
+              <h3>Evolução nos Simulados</h3>
+            </div>
+
+            <canvas id="progressChart"></canvas>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="card-header">
+                <h3>Desempenho por Disciplina</h3>
+              </div>
+
+              <canvas id="subjectChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-header">
+                <h3>Distribuição de Acertos</h3>
+              </div>
+
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="goal-section">
+        <div class="container">
+          <div class="goal-card">
+            <h3>Meta de Aprovação</h3>
+
+            <p>Você já alcançou uma parte significativa da sua meta.</p>
+
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+
+            <span class="goal-percent"> 78% da meta concluída </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-section">
+        <div class="container">
+          <div class="section-title">
+            <span> Histórico </span>
+
+            <h2>Últimos Simulados</h2>
+          </div>
+
+          <div class="history-table">
+            <div class="history-row">
+              <span> Simulado IFC 2025 </span>
+
+              <span> 82% </span>
+
+              <span> 03/07/2025 </span>
+            </div>
+
+            <div class="history-row">
+              <span> Simulado IFC 2024 </span>
+
+              <span> 79% </span>
+
+              <span> 28/06/2025 </span>
+            </div>
+
+            <div class="history-row">
+              <span> Simulado Personalizado </span>
+
+              <span> 75% </span>
+
+              <span> 21/06/2025 </span>
+            </div>
+
+            <div class="history-row">
+              <span> Simulado IFC 2023 </span>
+
+              <span> 72% </span>
+
+              <span> 15/06/2025 </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <h3>Aprova IF</h3>
+
+        <p>
+          Plataforma de preparação para estudantes do Instituto Federal
+          Catarinense.
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="/js/estatisticas.js"></script>
+  </body>
+</html>

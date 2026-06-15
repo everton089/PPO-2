@@ -1,94 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
 
-  <title>Cadastro - Aprova IF</title>
+    <title>Cadastro - Aprova IF</title>
 
-  <link rel="stylesheet" href="/css/reset.css">
-  <link rel="stylesheet" href="/css/variables.css">
-  <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/css/variables.css" />
+    <link rel="stylesheet" href="/css/global.css" />
 
-  <link rel="stylesheet" href="/css/components/buttons.css">
-  <link rel="stylesheet" href="/css/components/forms.css">
+    <link rel="stylesheet" href="/css/components/buttons.css" />
+    <link rel="stylesheet" href="/css/components/forms.css" />
 
-  <link rel="stylesheet" href="/css/pages/cadastro.css">
-</head>
+    <link rel="stylesheet" href="/css/pages/cadastro.css" />
+  </head>
 
-<body>
+  <body>
+    <main class="auth-page">
+      <div class="auth-card">
+        <h1>Criar Conta</h1>
 
-  <main class="auth-page">
+        <p>Comece sua preparação agora.</p>
 
-    <div class="auth-card">
+        <form>
+          <div class="form-group">
+            <label>Nome</label>
 
-      <h1>Criar Conta</h1>
+            <input type="text" placeholder="Seu nome" />
+          </div>
 
-      <p>
-        Comece sua preparação agora.
-      </p>
+          <div class="form-group">
+            <label>E-mail</label>
 
-      <form>
+            <input type="email" placeholder="Seu e-mail" />
+          </div>
 
-        <div class="form-group">
-          <label>Nome</label>
+          <div class="form-group">
+            <label>Senha</label>
 
-          <input
-            type="text"
-            placeholder="Seu nome"
-          >
+            <input type="password" placeholder="Sua senha" />
+          </div>
+
+          <div class="form-group">
+            <label>Confirmar Senha</label>
+
+            <input type="password" placeholder="Repita a senha" />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            Criar Conta
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <span> Já possui conta? </span>
+
+          <a href="/login"> Entrar </a>
         </div>
-
-        <div class="form-group">
-          <label>E-mail</label>
-
-          <input
-            type="email"
-            placeholder="Seu e-mail"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Senha</label>
-
-          <input
-            type="password"
-            placeholder="Sua senha"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Confirmar Senha</label>
-
-          <input
-            type="password"
-            placeholder="Repita a senha"
-          >
-        </div>
-
-        <button
-          type="submit"
-          class="btn btn-primary btn-full"
-        >
-          Criar Conta
-        </button>
-
-      </form>
-
-      <div class="auth-footer">
-
-        <span>
-          Já possui conta?
-        </span>
-
-        <a href="/login">
-          Entrar
-        </a>
-
       </div>
-
-    </div>
-
-  </main>
-
-</body>
+    </main>
+  </body>
 </html>
