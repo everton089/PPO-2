@@ -39,8 +39,11 @@ CREATE TABLE IF NOT EXISTS questoes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     prova_id INTEGER NOT NULL,
     materia TEXT NOT NULL,
+    assunto TEXT NOT NULL,
     enunciado TEXT NOT NULL,
-    FOREIGN KEY (prova_id) REFERENCES provas(id)
+
+    FOREIGN KEY (prova_id)
+        REFERENCES provas(id)
 )
 `);
 
@@ -71,6 +74,20 @@ CREATE TABLE IF NOT EXISTS resultados (
 
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (prova_id) REFERENCES provas(id)
+)
+`);
+
+db.run(`
+CREATE TABLE IF NOT EXISTS respostas_usuario (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    resultado_id INTEGER NOT NULL,
+    questao_id INTEGER NOT NULL,
+    alternativa_escolhida INTEGER NOT NULL,
+    acertou BOOLEAN NOT NULL,
+
+    FOREIGN KEY (resultado_id) REFERENCES resultados(id),
+    FOREIGN KEY (questao_id) REFERENCES questoes(id),
+    FOREIGN KEY (alternativa_escolhida) REFERENCES alternativas(id)
 )
 `);
 
