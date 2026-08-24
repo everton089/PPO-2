@@ -1,12 +1,9 @@
-const form = document.getElementById("cadastroForm");
+const form = document.getElementById("loginForm");
 const mensagem = document.getElementById("mensagem");
 
 form.addEventListener("submit", async (event) => {
 
     event.preventDefault();
-
-    const nome =
-        document.getElementById("nome").value.trim();
 
     const email =
         document.getElementById("email").value.trim();
@@ -14,23 +11,11 @@ form.addEventListener("submit", async (event) => {
     const senha =
         document.getElementById("senha").value;
 
-    const confirmarSenha =
-        document.getElementById("confirmarSenha").value;
-
-
-    if (senha !== confirmarSenha) {
-
-        mensagem.textContent =
-            "As senhas não coincidem.";
-
-        return;
-    }
-
 
     try {
 
         const response = await fetch(
-            "/api/usuarios",
+            "/api/login",
             {
                 method: "POST",
 
@@ -39,7 +24,6 @@ form.addEventListener("submit", async (event) => {
                 },
 
                 body: JSON.stringify({
-                    nome,
                     email,
                     senha
                 })
@@ -53,21 +37,31 @@ form.addEventListener("submit", async (event) => {
         if (!response.ok) {
 
             mensagem.textContent =
-                data.erro || "Erro ao criar conta.";
+                data.erro || "Erro ao fazer login.";
 
             return;
         }
 
 
+        /*
+         * Guarda temporariamente os dados
+         * do usuário no navegador.
+         */
+        localStorage.setItem(
+            "usuario",
+            JSON.stringify(data.usuario)
+        );
+
+
         mensagem.textContent =
-            "Conta criada com sucesso!";
+            "Login realizado com sucesso!";
 
 
         setTimeout(() => {
 
-            window.location.href = "/login";
+            window.location.href = "/";
 
-        }, 1000);
+        }, 500);
 
 
     } catch (error) {

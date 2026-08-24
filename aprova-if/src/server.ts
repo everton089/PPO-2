@@ -1,5 +1,5 @@
 import { AprovaIFDatabase } from "./BD.ts";
-import path from "path";
+import path from "node:path";
 
 const db = new AprovaIFDatabase();
 
@@ -10,9 +10,9 @@ const PUBLIC_DIR = path.resolve(
     "../public"
 );
 
-/*=========================
-    TIPOS DAS REQUISIÇÕES
-=========================*/
+/* =====================================================
+   TIPOS DAS REQUISIÇÕES
+===================================================== */
 
 type CriarUsuarioBody = {
     nome: string;
@@ -20,186 +20,597 @@ type CriarUsuarioBody = {
     senha: string;
 };
 
+type LoginBody = {
+    email: string;
+    senha: string;
+};
+
 type AtualizarPerfilBody = {
     id: number;
     nome: string;
-    foto: string;
+    foto?: string | null;
+    compartilharEstatisticas?: boolean;
 };
 
 type CriarProvaBody = {
     titulo: string;
-    ano: number;
+    ano?: number | null;
     tipo: string;
     criadorId?: number;
+};
+
+type CriarQuestaoBody = {
+    materia: string;
+    assunto?: string | null;
+    texto: string;
+    dificuldade?: number | null;
+    tipo?: string;
+    imagem?: string | null;
+};
+
+type CriarAlternativaBody = {
+    letra: string;
+    texto: string;
+    correta: boolean;
+    figura?: string | null;
+};
+
+type AdicionarQuestaoBody = {
+    questaoId: number;
+    ordem: number;
+};
+
+type RespostaBody = {
+    questaoId: number;
+    alternativaId: number | null;
 };
 
 type ResultadoBody = {
     usuarioId: number;
     provaId: number;
-    nota: number;
-    acertos: number;
+    nota?: number;
+    acertos?: number;
+    erros?: number;
+    respostas?: RespostaBody[];
 };
+
+/* =====================================================
+   FUNÇÕES AUXILIARES
+===================================================== */
+
+function numero(valor: string | null): number | null {
+    if (valor === null) {
+        return null;
+    }
+
+    const convertido = Number(valor);
+
+    return Number.isFinite(convertido) ? convertido : null;
+}
+
+function respostaErro(mensagem: string, status = 400) {
+    return Response.json(
+        { erro: mensagem },
+        { status }
+    );
+}
+
+async function lerJson<T>(request: Request): Promise<T> {
+    return await request.json() as T;
+}
+
+/* =====================================================
+   SERVIDOR
+===================================================== */
 
 Bun.serve({
     port,
 
     async fetch(request) {
-
         const url = new URL(request.url);
-        let pathname = url.pathname;
+        const pathname = url.pathname;
         const method = request.method;
 
-        /*=========================
-            USUÁRIOS
-        =========================*/
+        try {
+            /* =================================================
+               USUÁRIOS
+            ================================================= */
 
-        if (pathname === "/api/usuarios" && method === "POST") {
+            // POST /api/usuarios
+            if (
+                pathname === "/api/usuarios" &&
+                method === "POST"
+            ) {
+                const body = await lerJson<CriarUsuarioBody>(request);
 
-            const body = await request.json() as CriarUsuarioBody;
+                if (!body.nome || !body.email || !body.senha) {
+                    return respostaErro(
+                        "Nome, email e senha são obrigatórios."
+                    );
+                }
 
-            const usuario = db.criarUsuario(
-                body.nome,
-                body.email,
-                body.senha
+                try {
+                    const usuario = await db.criarUsuario(
+                        body.nome,
+                        body.email,
+                        body.senha
+                    );
+
+                    return Response.json(usuario, {
+                        status: 201
+                    });
+                } catch (error) {
+                    if (
+                        error instanceof Error &&
+                        error.message === "EMAIL_JA_CADASTRADO"
+                    ) {
+                        return respostaErro(
+                            "Este email já está cadastrado.",
+                            409
+                        );
+                    }
+
+                    throw error;
+                }
+            }
+
+            // GET /api/usuarios?email=...
+            if (
+                pathname === "/api/usuarios" &&
+                method === "GET"
+            ) {
+                const email = url.searchParams.get("email");
+
+                if (!email) {
+                    return respostaErro("Email não informado.");
+                }
+
+                const usuario = db.buscarUsuario(email);
+
+                if (!usuario) {
+                    return respostaErro(
+                        "Usuário não encontrado.",
+                        404
+                    );
+                }
+
+                return Response.json(usuario);
+            }
+
+            // GET /api/usuarios/:id
+            const usuarioMatch = pathname.match(
+                /^\/api\/usuarios\/(\d+)$/
             );
 
-            return Response.json(usuario, {
-                status: 201
-            });
-        }
+            if (
+                usuarioMatch &&
+                method === "GET"
+            ) {
+                const id = Number(usuarioMatch[1]);
+                const usuario = db.buscarUsuarioPorId(id);
 
-        if (pathname === "/api/usuarios" && method === "GET") {
+                if (!usuario) {
+                    return respostaErro(
+                        "Usuário não encontrado.",
+                        404
+                    );
+                }
 
-            const email = url.searchParams.get("email");
+                return Response.json(usuario);
+            }
 
-            if (!email) {
+            // PUT /api/usuarios
+            if (
+                pathname === "/api/usuarios" &&
+                method === "PUT"
+            ) {
+                const body = await lerJson<AtualizarPerfilBody>(request);
+
+                if (!body.id || !body.nome) {
+                    return respostaErro(
+                        "ID e nome são obrigatórios."
+                    );
+                }
+
+                const resultado = db.atualizarPerfil(
+                    body.id,
+                    body.nome,
+                    body.foto ?? null,
+                    body.compartilharEstatisticas
+                );
+
+                if (!resultado.alterado) {
+                    return respostaErro(
+                        "Usuário não encontrado.",
+                        404
+                    );
+                }
+
+                return Response.json(resultado);
+            }
+
+            // POST /api/login
+            if (
+                pathname === "/api/login" &&
+                method === "POST"
+            ) {
+                const body = await lerJson<LoginBody>(request);
+
+                if (!body.email || !body.senha) {
+                    return respostaErro(
+                        "Email e senha são obrigatórios."
+                    );
+                }
+
+                const usuario = await db.validarLogin(
+                    body.email,
+                    body.senha
+                );
+
+                if (!usuario) {
+                    return respostaErro(
+                        "Email ou senha inválidos.",
+                        401
+                    );
+                }
+
+                return Response.json(usuario);
+            }
+
+            /* =================================================
+               PROVAS
+            ================================================= */
+
+            // POST /api/provas
+            if (
+                pathname === "/api/provas" &&
+                method === "POST"
+            ) {
+                const body = await lerJson<CriarProvaBody>(request);
+
+                if (!body.titulo || !body.tipo) {
+                    return respostaErro(
+                        "Título e tipo são obrigatórios."
+                    );
+                }
+
+                const prova = db.criarProva(
+                    body.titulo,
+                    body.ano ?? null,
+                    body.tipo,
+                    body.criadorId
+                );
+
+                return Response.json(prova, {
+                    status: 201
+                });
+            }
+
+            // GET /api/provas
+            if (
+                pathname === "/api/provas" &&
+                method === "GET"
+            ) {
+                return Response.json(db.listarProvas());
+            }
+
+            // GET /api/provas/:id
+            const provaMatch = pathname.match(
+                /^\/api\/provas\/(\d+)$/
+            );
+
+            if (
+                provaMatch &&
+                method === "GET"
+            ) {
+                const id = Number(provaMatch[1]);
+                const prova = db.buscarProva(id);
+
+                if (!prova) {
+                    return respostaErro(
+                        "Prova não encontrada.",
+                        404
+                    );
+                }
+
+                return Response.json(prova);
+            }
+
+            /* =================================================
+               QUESTÕES
+            ================================================= */
+
+            // POST /api/questoes
+            if (
+                pathname === "/api/questoes" &&
+                method === "POST"
+            ) {
+                const body = await lerJson<CriarQuestaoBody>(request);
+
+                if (!body.materia || !body.texto) {
+                    return respostaErro(
+                        "Matéria e texto são obrigatórios."
+                    );
+                }
+
+                const questao = db.criarQuestao(
+                    body.materia,
+                    body.assunto ?? null,
+                    body.texto,
+                    body.dificuldade ?? null,
+                    body.tipo ?? "multipla escolha",
+                    body.imagem ?? null
+                );
+
+                return Response.json(questao, {
+                    status: 201
+                });
+            }
+
+            // POST /api/questoes/:id/alternativas
+            const alternativaMatch = pathname.match(
+                /^\/api\/questoes\/(\d+)\/alternativas$/
+            );
+
+            if (
+                alternativaMatch &&
+                method === "POST"
+            ) {
+                const questaoId = Number(alternativaMatch[1]);
+                const body = await lerJson<CriarAlternativaBody>(request);
+
+                if (!body.letra || !body.texto) {
+                    return respostaErro(
+                        "Letra e texto são obrigatórios."
+                    );
+                }
+
+                const alternativa = db.criarAlternativa(
+                    questaoId,
+                    body.letra,
+                    body.texto,
+                    body.correta,
+                    body.figura ?? null
+                );
+
+                return Response.json(alternativa, {
+                    status: 201
+                });
+            }
+
+            // POST /api/provas/:id/questoes
+            const provaQuestaoMatch = pathname.match(
+                /^\/api\/provas\/(\d+)\/questoes$/
+            );
+
+            if (
+                provaQuestaoMatch &&
+                method === "POST"
+            ) {
+                const provaId = Number(provaQuestaoMatch[1]);
+                const body = await lerJson<AdicionarQuestaoBody>(request);
+
+                if (!body.questaoId || !body.ordem) {
+                    return respostaErro(
+                        "questaoId e ordem são obrigatórios."
+                    );
+                }
+
+                const resultado = db.adicionarQuestaoNaProva(
+                    provaId,
+                    body.questaoId,
+                    body.ordem
+                );
+
+                return Response.json(resultado, {
+                    status: 201
+                });
+            }
+
+            // GET /api/provas/:id/questoes
+            if (
+                provaQuestaoMatch &&
+                method === "GET"
+            ) {
+                const provaId = Number(provaQuestaoMatch[1]);
+
                 return Response.json(
-                    {
-                        erro: "Email não informado."
-                    },
-                    {
-                        status: 400
-                    }
+                    db.listarQuestoesDaProva(provaId)
                 );
             }
 
-            const usuario = db.buscarUsuario(email);
+            /* =================================================
+               RESULTADOS
+            ================================================= */
 
-            return Response.json(usuario);
-        }
+            // POST /api/resultados
+            if (
+                pathname === "/api/resultados" &&
+                method === "POST"
+            ) {
+                const body = await lerJson<ResultadoBody>(request);
 
-        if (pathname === "/api/usuarios" && method === "PUT") {
+                if (!body.usuarioId || !body.provaId) {
+                    return respostaErro(
+                        "usuarioId e provaId são obrigatórios."
+                    );
+                }
 
-            const body = await request.json() as AtualizarPerfilBody;
+                // Mantém compatibilidade com o formato atual do projeto.
+                const resultado = db.salvarResultado(
+                    body.usuarioId,
+                    body.provaId,
+                    body.nota ?? 0,
+                    body.acertos ?? 0,
+                    body.erros
+                );
 
-            db.atualizarPerfil(
-                body.id,
-                body.nome,
-                body.foto
-            );
+               let resultadoFinal: {
+                    resultadoId: number;
+                    nota: number;
+                    acertos: number;
+                    erros: number;
+                };
 
-            return Response.json({
-                mensagem: "Perfil atualizado com sucesso."
-            });
-        }
+                if (body.respostas) {
+                    resultadoFinal = db.salvarRespostasDoResultado(
+                        resultado.id,
+                        body.respostas
+                    );
+                }
 
-        /*=========================
-            PROVAS
-        =========================*/
-
-        if (pathname === "/api/provas" && method === "POST") {
-
-            const body = await request.json() as CriarProvaBody;
-
-            const prova = db.criarProva(
-                body.titulo,
-                body.ano,
-                body.tipo,
-                body.criadorId
-            );
-
-            return Response.json(prova, {
-                status: 201
-            });
-        }
-
-        if (pathname === "/api/provas" && method === "GET") {
-
-            const provas = db.listarProvas();
-
-            return Response.json(provas);
-        }
-
-        /*=========================
-            RESULTADOS
-        =========================*/
-
-        if (pathname === "/api/resultados" && method === "POST") {
-
-            const body = await request.json() as ResultadoBody;
-
-            db.salvarResultado(
-                body.usuarioId,
-                body.provaId,
-                body.nota,
-                body.acertos
-            );
-
-            return Response.json({
-                mensagem: "Resultado salvo com sucesso."
-            });
-        }
-
-        /*=========================
-            RANKING
-        =========================*/
-
-        if (pathname === "/api/ranking" && method === "GET") {
-
-            const ranking = db.ranking();
-
-            return Response.json(ranking);
-        }
-
-        /*=========================
-            MELHORES MATÉRIAS
-        =========================*/
-
-        if (pathname === "/api/materias" && method === "GET") {
-
-            const materias = db.melhoresNotasMateria();
-
-            return Response.json(materias);
-        }
-
-        /*=========================
-            ARQUIVOS ESTÁTICOS
-        =========================*/
-
-        if (pathname === "/") {
-            pathname = "/index.html";
-        }
-        else if (!pathname.includes(".")) {
-            pathname += ".html";
-        }
-
-        const filePath = path.join(
-            PUBLIC_DIR,
-            pathname
-        );
-
-        const file = Bun.file(filePath);
-
-        if (await file.exists()) {
-            return new Response(file);
-        }
-
-        return new Response(
-            "Página não encontrada",
-            {
-                status: 404
+                return Response.json( {
+                    status: 201
+                });
             }
-        );
+
+            // GET /api/resultados/:id
+            const resultadoMatch = pathname.match(
+                /^\/api\/resultados\/(\d+)$/
+            );
+
+            if (
+                resultadoMatch &&
+                method === "GET"
+            ) {
+                const id = Number(resultadoMatch[1]);
+                const resultado = db.buscarResultado(id);
+
+                if (!resultado) {
+                    return respostaErro(
+                        "Resultado não encontrado.",
+                        404
+                    );
+                }
+
+                return Response.json(resultado);
+            }
+
+            /* =================================================
+               ESTATÍSTICAS
+            ================================================= */
+
+            // GET /api/estatisticas/:id
+            const estatisticasMatch = pathname.match(
+                /^\/api\/estatisticas\/(\d+)$/
+            );
+
+            if (
+                estatisticasMatch &&
+                method === "GET"
+            ) {
+                const usuarioId = Number(estatisticasMatch[1]);
+
+                return Response.json(
+                    db.estatisticasUsuario(usuarioId)
+                );
+            }
+
+            // GET /api/usuarios/:id/estatisticas
+            const usuarioEstatisticasMatch = pathname.match(
+                /^\/api\/usuarios\/(\d+)\/estatisticas$/
+            );
+
+            if (
+                usuarioEstatisticasMatch &&
+                method === "GET"
+            ) {
+                const usuarioId = Number(
+                    usuarioEstatisticasMatch[1]
+                );
+
+                return Response.json(
+                    db.estatisticasUsuario(usuarioId)
+                );
+            }
+
+            /* =================================================
+               RANKING
+            ================================================= */
+
+            if (
+                pathname === "/api/ranking" &&
+                method === "GET"
+            ) {
+                return Response.json(db.ranking());
+            }
+
+            if (
+                pathname === "/api/ranking/todos" &&
+                method === "GET"
+            ) {
+                return Response.json(db.rankingTodos());
+            }
+
+            /* =================================================
+               MELHORES DESEMPENHOS POR MATÉRIA
+            ================================================= */
+
+            if (
+                pathname === "/api/materias" &&
+                method === "GET"
+            ) {
+                return Response.json(
+                    db.melhoresNotasMateria()
+                );
+            }
+
+            /* =================================================
+               HISTÓRICO DO USUÁRIO
+            ================================================= */
+
+            const historicoMatch = pathname.match(
+                /^\/api\/usuarios\/(\d+)\/historico$/
+            );
+
+            if (
+                historicoMatch &&
+                method === "GET"
+            ) {
+                const usuarioId = Number(historicoMatch[1]);
+
+                return Response.json(
+                    db.historicoUsuario(usuarioId)
+                );
+            }
+
+            /* =================================================
+               ARQUIVOS ESTÁTICOS
+            ================================================= */
+
+            let arquivoPath = pathname;
+
+            if (arquivoPath === "/") {
+                arquivoPath = "/index.html";
+            }
+            else if (!arquivoPath.includes(".")) {
+                arquivoPath += ".html";
+            }
+
+            const filePath = path.join(
+                PUBLIC_DIR,
+                arquivoPath
+            );
+
+            const file = Bun.file(filePath);
+
+            if (await file.exists()) {
+                return new Response(file);
+            }
+
+            return new Response(
+                "Página não encontrada",
+                { status: 404 }
+            );
+        }
+        catch (error) {
+            console.error(error);
+
+            return respostaErro(
+                "Erro interno do servidor.",
+                500
+            );
+        }
     }
 });
 
