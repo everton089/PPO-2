@@ -35,3 +35,10 @@
 
   text-align:center;
 }
+.auth-card .form-group { margin-bottom: 16px; }
+.auth-card label { display: block; margin-bottom: 6px; }
+.auth-card input { width: 100%; box-sizing: border-box; }
+.auth-message { min-height: 1.25rem; margin: 8px 0 14px; color: #b42318; font-size: .92rem; }
+.auth-message.success { color: #167647; }
+.auth-card button:disabled { opacity: .7; cursor: wait; }
+.auth-footer a { margin-left: 4px; }

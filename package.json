@@ -12,5 +12,9 @@
   },
   "dependencies": {
     "figlet": "^1.11.0"
+  },
+  "scripts": {
+    "dev": "bun run aprova-if/src/server.ts",
+    "start": "bun run aprova-if/src/server.ts"
   }
 }

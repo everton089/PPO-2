@@ -1,5 +1,6 @@
 import { AprovaIFDatabase } from "./BD.ts";
 import path from "node:path";
+import { mkdir } from "node:fs/promises";
 
 const db = new AprovaIFDatabase();
 
@@ -37,6 +38,10 @@ type CriarProvaBody = {
     ano?: number | null;
     tipo: string;
     criadorId?: number;
+    curso?: string | null;
+    campus?: string | null;
+    adminEmail?: string;
+    adminSenha?: string;
 };
 
 type CriarQuestaoBody = {
@@ -63,6 +68,21 @@ type AdicionarQuestaoBody = {
 type RespostaBody = {
     questaoId: number;
     alternativaId: number | null;
+};
+
+type SimuladoPersonalizadoBody = {
+    materias?: string[];
+    quantidade?: number;
+    dificuldade?: number | null;
+    criadorId?: number;
+    curso?: string | null;
+    campus?: string | null;
+};
+
+type ResultadoVisitanteBody = {
+    visitanteId: string;
+    provaId: number;
+    respostas: RespostaBody[];
 };
 
 type ResultadoBody = {
@@ -123,16 +143,33 @@ Bun.serve({
             ) {
                 const body = await lerJson<CriarUsuarioBody>(request);
 
-                if (!body.nome || !body.email || !body.senha) {
-                    return respostaErro(
-                        "Nome, email e senha são obrigatórios."
-                    );
+                if (
+                    typeof body.nome !== "string" ||
+                    typeof body.email !== "string" ||
+                    typeof body.senha !== "string" ||
+                    !body.nome.trim() ||
+                    !body.email.trim() ||
+                    !body.senha
+                ) {
+                    return respostaErro("Nome, email e senha são obrigatórios.");
+                }
+
+                const nome = body.nome.trim();
+                const email = body.email.trim().toLowerCase();
+                if (nome.length < 2 || nome.length > 100) {
+                    return respostaErro("O nome deve ter entre 2 e 100 caracteres.");
+                }
+                if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    return respostaErro("Informe um e-mail válido.");
+                }
+                if (body.senha.length < 8) {
+                    return respostaErro("A senha deve ter pelo menos 8 caracteres.");
                 }
 
                 try {
                     const usuario = await db.criarUsuario(
-                        body.nome,
-                        body.email,
+                        nome,
+                        email,
                         body.senha
                     );
 
@@ -142,7 +179,8 @@ Bun.serve({
                 } catch (error) {
                     if (
                         error instanceof Error &&
-                        error.message === "EMAIL_JA_CADASTRADO"
+                        (error.message === "EMAIL_JA_CADASTRADO" ||
+                         error.message.includes("UNIQUE constraint failed: usuarios.email"))
                     ) {
                         return respostaErro(
                             "Este email já está cadastrado.",
@@ -236,14 +274,17 @@ Bun.serve({
             ) {
                 const body = await lerJson<LoginBody>(request);
 
-                if (!body.email || !body.senha) {
-                    return respostaErro(
-                        "Email e senha são obrigatórios."
-                    );
+                if (
+                    typeof body.email !== "string" ||
+                    typeof body.senha !== "string" ||
+                    !body.email.trim() ||
+                    !body.senha
+                ) {
+                    return respostaErro("Email e senha são obrigatórios.");
                 }
 
                 const usuario = await db.validarLogin(
-                    body.email,
+                    body.email.trim().toLowerCase(),
                     body.senha
                 );
 
@@ -268,17 +309,39 @@ Bun.serve({
             ) {
                 const body = await lerJson<CriarProvaBody>(request);
 
-                if (!body.titulo || !body.tipo) {
-                    return respostaErro(
-                        "Título e tipo são obrigatórios."
-                    );
+                if (typeof body.titulo !== "string" || !body.titulo.trim() || !body.tipo) {
+                    return respostaErro("Título e tipo são obrigatórios.");
+                }
+
+                const tipo = body.tipo.trim().toLowerCase();
+                if (tipo !== "oficial" && tipo !== "personalizada") {
+                    return respostaErro("O tipo deve ser 'oficial' ou 'personalizada'.");
+                }
+
+                // Provas oficiais exigem autenticação de administrador no servidor.
+                // Configure ADMIN_EMAIL no ambiente e use a senha da conta correspondente.
+                if (tipo === "oficial") {
+                    const emailAdminConfigurado = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+                    const emailInformado = body.adminEmail?.trim().toLowerCase();
+                    if (!emailAdminConfigurado) {
+                        return respostaErro("O administrador ainda não foi configurado. Defina ADMIN_EMAIL no arquivo .env.", 503);
+                    }
+                    if (!emailInformado || emailInformado !== emailAdminConfigurado || !body.adminSenha) {
+                        return respostaErro("Apenas o administrador pode cadastrar provas oficiais.", 403);
+                    }
+                    const adminValido = await db.validarLogin(emailInformado, body.adminSenha);
+                    if (!adminValido) {
+                        return respostaErro("Credenciais do administrador inválidas.", 403);
+                    }
                 }
 
                 const prova = db.criarProva(
-                    body.titulo,
+                    body.titulo.trim(),
                     body.ano ?? null,
-                    body.tipo,
-                    body.criadorId
+                    tipo,
+                    body.criadorId,
+                    body.curso ?? null,
+                    body.campus ?? null
                 );
 
                 return Response.json(prova, {
@@ -286,12 +349,47 @@ Bun.serve({
                 });
             }
 
-            // GET /api/provas
-            if (
-                pathname === "/api/provas" &&
-                method === "GET"
-            ) {
-                return Response.json(db.listarProvas());
+            // Filtros disponíveis para a tela pública de provas.
+            if (pathname === "/api/provas/filtros" && method === "GET") {
+                return Response.json(db.filtrosProvas());
+            }
+
+            // Gerar simulado a partir do banco de questões existente.
+            if (pathname === "/api/simulados/personalizados" && method === "POST") {
+                const body = await lerJson<SimuladoPersonalizadoBody>(request);
+                const materias = Array.isArray(body.materias)
+                    ? body.materias.filter((item) => typeof item === "string").slice(0, 20)
+                    : [];
+                const quantidade = Number(body.quantidade ?? 10);
+                const dificuldade = body.dificuldade === null || body.dificuldade === undefined
+                    ? null : Number(body.dificuldade);
+                if (!Number.isFinite(quantidade) || quantidade < 1 || quantidade > 40) {
+                    return respostaErro("A quantidade deve ficar entre 1 e 40 questões.");
+                }
+                if (dificuldade !== null && ![1, 2, 3].includes(dificuldade)) {
+                    return respostaErro("Selecione uma dificuldade válida.");
+                }
+                try {
+                    const prova = db.gerarSimuladoPersonalizado(materias, quantidade, dificuldade, body.criadorId, body.curso, body.campus);
+                    return Response.json(prova, { status: 201 });
+                } catch (error) {
+                    if (error instanceof Error && error.message === "SEM_QUESTOES_PARA_SIMULADO") {
+                        return respostaErro("Ainda não há questões suficientes para esses filtros. Tente outra matéria ou dificuldade.", 422);
+                    }
+                    throw error;
+                }
+            }
+
+            // GET /api/provas?tipo=&ano=&curso=&campus=
+            if (pathname === "/api/provas" && method === "GET") {
+                const anoTexto = url.searchParams.get("ano");
+                const ano = anoTexto && Number.isFinite(Number(anoTexto)) ? Number(anoTexto) : null;
+                return Response.json(db.listarProvas({
+                    tipo: url.searchParams.get("tipo"),
+                    ano,
+                    curso: url.searchParams.get("curso"),
+                    campus: url.searchParams.get("campus")
+                }));
             }
 
             // GET /api/provas/:id
@@ -317,6 +415,44 @@ Bun.serve({
             }
 
             /* =================================================
+               IMAGENS DE QUESTÕES
+            ================================================= */
+
+            // POST /api/imagens-questao — upload de imagem de enunciado.
+            if (pathname === "/api/imagens-questao" && method === "POST") {
+                const contentLength = Number(request.headers.get("content-length") || 0);
+                if (contentLength > 5 * 1024 * 1024 + 1024 * 1024) {
+                    return respostaErro("A imagem deve ter no máximo 5 MB.", 413);
+                }
+
+                const formData = await request.formData();
+                const arquivo = formData.get("imagem");
+                if (!(arquivo instanceof File)) {
+                    return respostaErro("Selecione uma imagem para enviar.");
+                }
+                if (arquivo.size < 1 || arquivo.size > 5 * 1024 * 1024) {
+                    return respostaErro("A imagem deve ter entre 1 byte e 5 MB.", 413);
+                }
+
+                const extensoesPermitidas: Record<string, string> = {
+                    "image/jpeg": ".jpg",
+                    "image/png": ".png",
+                    "image/webp": ".webp",
+                    "image/gif": ".gif"
+                };
+                const extensao = extensoesPermitidas[arquivo.type];
+                if (!extensao) {
+                    return respostaErro("Formato não permitido. Use PNG, JPG, WEBP ou GIF.");
+                }
+
+                const diretorioImagens = path.join(PUBLIC_DIR, "assets", "images", "questions");
+                await mkdir(diretorioImagens, { recursive: true });
+                const nomeArquivo = `${crypto.randomUUID()}${extensao}`;
+                await Bun.write(path.join(diretorioImagens, nomeArquivo), arquivo);
+                return Response.json({ url: `/assets/images/questions/${nomeArquivo}` }, { status: 201 });
+            }
+
+            /* =================================================
                QUESTÕES
             ================================================= */
 
@@ -331,6 +467,10 @@ Bun.serve({
                     return respostaErro(
                         "Matéria e texto são obrigatórios."
                     );
+                }
+
+                if (body.imagem != null && (typeof body.imagem !== "string" || body.imagem.length > 500 || !body.imagem.startsWith("/assets/images/questions/"))) {
+                    return respostaErro("O endereço da imagem da questão é inválido.");
                 }
 
                 const questao = db.criarQuestao(
@@ -459,9 +599,35 @@ Bun.serve({
                     );
                 }
 
-                return Response.json( {
-                    status: 201
-                });
+                return Response.json({
+                    resultadoId: resultado.id,
+                    ...(body.respostas ? resultadoFinal! : {
+                        nota: body.nota ?? 0,
+                        acertos: body.acertos ?? 0,
+                        erros: body.erros ?? 0
+                    })
+                }, { status: 201 });
+            }
+
+            // Salvar resultados de visitantes sem exigir cadastro.
+            if (pathname === "/api/resultados-visitantes" && method === "POST") {
+                const body = await lerJson<ResultadoVisitanteBody>(request);
+                if (typeof body.visitanteId !== "string" || !/^[a-zA-Z0-9-]{16,80}$/.test(body.visitanteId)) {
+                    return respostaErro("Identificador de visitante inválido.");
+                }
+                if (!Number.isInteger(body.provaId) || body.provaId < 1 || !Array.isArray(body.respostas)) {
+                    return respostaErro("Prova e respostas são obrigatórias.");
+                }
+                const resultado = db.salvarResultadoVisitante(body.visitanteId, body.provaId, body.respostas);
+                return Response.json(resultado, { status: 201 });
+            }
+
+            if (pathname === "/api/historico-visitante" && method === "GET") {
+                const visitanteId = url.searchParams.get("visitanteId") || "";
+                if (!/^[a-zA-Z0-9-]{16,80}$/.test(visitanteId)) {
+                    return respostaErro("Identificador de visitante inválido.");
+                }
+                return Response.json(db.historicoVisitante(visitanteId));
             }
 
             // GET /api/resultados/:id

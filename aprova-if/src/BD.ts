@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS provas (
     id_criador INTEGER,
     titulo TEXT NOT NULL,
     ano INTEGER,
+    curso TEXT,
+    campus TEXT,
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_tipo_prova)
@@ -63,6 +65,27 @@ CREATE TABLE IF NOT EXISTS provas (
         ON DELETE SET NULL
 )
 `);
+
+// Migrações compatíveis com bancos criados por versões anteriores.
+const colunasProvas = db.query("PRAGMA table_info(provas)").all() as Array<{ name: string }>;
+if (!colunasProvas.some((coluna) => coluna.name === "curso")) {
+    db.run("ALTER TABLE provas ADD COLUMN curso TEXT");
+}
+if (!colunasProvas.some((coluna) => coluna.name === "campus")) {
+    db.run("ALTER TABLE provas ADD COLUMN campus TEXT");
+}
+
+db.run(`CREATE TABLE IF NOT EXISTS resultados_visitantes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    visitante_id TEXT NOT NULL,
+    prova_id INTEGER NOT NULL,
+    nota REAL NOT NULL DEFAULT 0,
+    acertos INTEGER NOT NULL DEFAULT 0,
+    erros INTEGER NOT NULL DEFAULT 0,
+    data_realizacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (prova_id) REFERENCES provas(id_prova) ON DELETE CASCADE
+)`);
+
 
 // QUESTÕES
 
@@ -203,6 +226,11 @@ VALUES ('personalizada')
 `);
 
 db.run(`
+INSERT OR IGNORE INTO tipo_prova (descricao)
+VALUES ('simulado')
+`);
+
+db.run(`
 INSERT OR IGNORE INTO tipo_questao (descricao)
 VALUES ('multipla escolha')
 `);
@@ -283,9 +311,11 @@ INSERT INTO provas (
     id_tipo_prova,
     id_criador,
     titulo,
-    ano
+    ano,
+    curso,
+    campus
 )
-VALUES (?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?)
 `);
 
 const queryListarProvas = db.prepare(`
@@ -293,6 +323,8 @@ SELECT
     p.id_prova AS id,
     p.titulo,
     p.ano,
+    p.curso,
+    p.campus,
     tp.descricao AS tipo,
     p.id_criador AS criador_id,
     p.data_criacao,
@@ -311,6 +343,8 @@ SELECT
     p.id_prova AS id,
     p.titulo,
     p.ano,
+    p.curso,
+    p.campus,
     tp.descricao AS tipo,
     p.id_criador AS criador_id,
     p.data_criacao,
@@ -716,7 +750,9 @@ export class AprovaIFDatabase {
         titulo: string,
         ano: number | null,
         tipo: string,
-        criadorId?: number
+        criadorId?: number,
+        curso?: string | null,
+        campus?: string | null
     ) {
         const tipoId = this.obterOuCriarTipoProva(tipo);
 
@@ -724,7 +760,9 @@ export class AprovaIFDatabase {
             tipoId,
             criadorId ?? null,
             titulo.trim(),
-            ano ?? null
+            ano ?? null,
+            curso?.trim() || null,
+            campus?.trim() || null
         );
 
         const id = Number(result.lastInsertRowid);
@@ -736,8 +774,92 @@ export class AprovaIFDatabase {
         return queryBuscarProva.get(id);
     }
 
-    listarProvas() {
-        return queryListarProvas.all();
+    listarProvas(filtros: { tipo?: string | null; ano?: number | null; curso?: string | null; campus?: string | null } = {}) {
+        const sql = `
+            SELECT p.id_prova AS id, p.titulo, p.ano, p.curso, p.campus,
+                tp.descricao AS tipo, p.id_criador AS criador_id, p.data_criacao,
+                COUNT(pq.id_questao) AS quantidade_questoes
+            FROM provas p
+            INNER JOIN tipo_prova tp ON tp.id_tipo_prova = p.id_tipo_prova
+            LEFT JOIN prova_questao pq ON pq.id_prova = p.id_prova
+            WHERE (? IS NULL OR LOWER(tp.descricao) = LOWER(?))
+              AND (? IS NULL OR p.ano = ?)
+              AND (? IS NULL OR LOWER(COALESCE(p.curso, '')) = LOWER(?))
+              AND (? IS NULL OR LOWER(COALESCE(p.campus, '')) = LOWER(?))
+            GROUP BY p.id_prova
+            ORDER BY p.ano DESC, p.id_prova DESC`;
+        return db.query(sql).all(
+            filtros.tipo ?? null, filtros.tipo ?? null,
+            filtros.ano ?? null, filtros.ano ?? null,
+            filtros.curso ?? null, filtros.curso ?? null,
+            filtros.campus ?? null, filtros.campus ?? null
+        );
+    }
+
+    filtrosProvas() {
+        return {
+            anos: (db.query("SELECT DISTINCT ano FROM provas WHERE ano IS NOT NULL ORDER BY ano DESC").all() as Array<{ ano: number }>).map((x) => x.ano),
+            cursos: (db.query("SELECT DISTINCT curso FROM provas WHERE curso IS NOT NULL AND TRIM(curso) <> '' ORDER BY curso COLLATE NOCASE").all() as Array<{ curso: string }>).map((x) => x.curso),
+            campi: (db.query("SELECT DISTINCT campus FROM provas WHERE campus IS NOT NULL AND TRIM(campus) <> '' ORDER BY campus COLLATE NOCASE").all() as Array<{ campus: string }>).map((x) => x.campus)
+        };
+    }
+
+    gerarSimuladoPersonalizado( materias: string[], quantidade: number, dificuldade: number | null, criadorId?: number, curso?: string | null, campus?: string | null) {
+        const limite = Math.max(1, Math.min(40, Math.floor(quantidade || 10)));
+        const filtrosMateria = materias.length ? materias : [];
+        let sql = `SELECT q.id_questao FROM questoes q
+            WHERE (SELECT COUNT(*) FROM alternativas a WHERE a.id_questao = q.id_questao) >= 2`;
+        const params: (string | number)[] = [];
+        if (filtrosMateria.length) {
+            sql += ` AND LOWER(q.materia) IN (${filtrosMateria.map(() => '?').join(',')})`;
+            params.push(...filtrosMateria.map((m) => m.trim().toLowerCase()));
+        }
+        if (dificuldade !== null && [1,2,3].includes(dificuldade)) {
+            sql += " AND q.dificuldade = ?";
+            params.push(dificuldade);
+        }
+        sql += " ORDER BY RANDOM() LIMIT ?";
+        params.push(limite);
+        const ids = (db.query(sql).all(...params) as Array<{ id_questao: number }>).map((q) => q.id_questao);
+        if (!ids.length) throw new Error("SEM_QUESTOES_PARA_SIMULADO");
+        const prova = this.criarProva(`Simulado personalizado - ${new Date().toLocaleDateString("pt-BR")}`, new Date().getFullYear(), "simulado", criadorId, curso, campus) as { id: number };
+        ids.forEach((questaoId, index) => this.adicionarQuestaoNaProva(prova.id, questaoId, index + 1));
+        return { ...this.buscarProva(prova.id) as object, quantidade_questoes: ids.length };
+    }
+
+    salvarResultadoVisitante(visitanteId: string, provaId: number, respostas: Array<{ questaoId: number; alternativaId: number | null }>) {
+        const prova = this.buscarProva(provaId) as { id: number } | null;
+        if (!prova) throw new Error("PROVA_NAO_ENCONTRADA");
+        const questoes = this.listarQuestoesDaProva(provaId) as Array<{ id: number; alternativas: Array<{ id: number }> }>;
+        const questoesPermitidas = new Set(questoes.map((q) => q.id));
+        const respostasUnicas = new Map<number, number | null>();
+        for (const resposta of respostas) {
+            if (questoesPermitidas.has(resposta.questaoId) && !respostasUnicas.has(resposta.questaoId)) {
+                respostasUnicas.set(resposta.questaoId, resposta.alternativaId);
+            }
+        }
+        let acertos = 0;
+        let respondidas = 0;
+        for (const [questaoId, alternativaId] of respostasUnicas) {
+            respondidas++;
+            if (alternativaId !== null) {
+                const validacao = db.query(`SELECT a.correta FROM alternativas a INNER JOIN prova_questao pq ON pq.id_questao = a.id_questao WHERE pq.id_prova = ? AND a.id_questao = ? AND a.id_alternativa = ?`).get(provaId, questaoId, alternativaId) as { correta: number } | null;
+                if (validacao?.correta === 1) acertos++;
+            }
+        }
+        const erros = Math.max(questoes.length - acertos, 0);
+        const nota = questoes.length ? Number((acertos / questoes.length * 100).toFixed(2)) : 0;
+        const result = db.query(`INSERT INTO resultados_visitantes (visitante_id, prova_id, nota, acertos, erros) VALUES (?, ?, ?, ?, ?)`)
+            .run(visitanteId, provaId, nota, acertos, erros);
+        return { id: Number(result.lastInsertRowid), provaId, nota, acertos, erros, total: questoes.length, respondidas };
+    }
+
+    historicoVisitante(visitanteId: string) {
+        return db.query(`SELECT r.id, r.prova_id AS prova_id, p.titulo AS prova, tp.descricao AS tipo, r.nota, r.acertos, r.erros, r.data_realizacao
+            FROM resultados_visitantes r
+            INNER JOIN provas p ON p.id_prova = r.prova_id
+            INNER JOIN tipo_prova tp ON tp.id_tipo_prova = p.id_tipo_prova
+            WHERE r.visitante_id = ? ORDER BY r.data_realizacao DESC, r.id DESC`).all(visitanteId);
     }
 
     buscarProva(id: number) {

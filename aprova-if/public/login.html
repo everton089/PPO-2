@@ -1,49 +1,37 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-
-    <title>Login - Aprova IF</title>
-
-    <link rel="stylesheet" href="/css/reset.css" />
-    <link rel="stylesheet" href="/css/variables.css" />
-    <link rel="stylesheet" href="/css/global.css" />
-
-    <link rel="stylesheet" href="/css/components/buttons.css" />
-    <link rel="stylesheet" href="/css/components/forms.css" />
-
-    <link rel="stylesheet" href="/css/pages/login.css" />
-  </head>
-
-  <body>
-    <main class="auth-page">
-      <div class="auth-card">
-        <h1>Aprova IF</h1>
-
-        <p>Entre para continuar seus estudos.</p>
-
-        <form>
-          <div class="form-group">
-            <label>E-mail</label>
-
-            <input type="email" placeholder="Digite seu e-mail" />
-          </div>
-
-          <div class="form-group">
-            <label>Senha</label>
-
-            <input type="password" placeholder="Digite sua senha" />
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-full">Entrar</button>
-        </form>
-
-        <div class="auth-footer">
-          <span> Não possui conta? </span>
-
-          <a href="/cadastro"> Criar Conta </a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Aprova IF</title>
+  <link rel="stylesheet" href="/css/reset.css" />
+  <link rel="stylesheet" href="/css/variables.css" />
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/components/buttons.css" />
+  <link rel="stylesheet" href="/css/components/forms.css" />
+  <link rel="stylesheet" href="/css/pages/login.css" />
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card" aria-labelledby="tituloLogin">
+      <h1 id="tituloLogin">Aprova IF</h1>
+      <p>Entre para continuar seus estudos.</p>
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" placeholder="Digite seu e-mail" autocomplete="email" maxlength="254" required />
         </div>
-      </div>
-    </main>
-  </body>
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input id="senha" name="senha" type="password" placeholder="Digite sua senha" autocomplete="current-password" required />
+        </div>
+        <p id="mensagem" class="auth-message" role="status" aria-live="polite"></p>
+        <button id="btnLogin" type="submit" class="btn btn-primary btn-full">Entrar</button>
+      </form>
+      <div class="auth-footer"><span>Não possui conta?</span> <a href="/cadastro">Criar conta</a></div>
+      <div class="auth-footer"><a href="/">Voltar ao início</a></div>
+    </section>
+  </main>
+  <script src="/js/login.js" defer></script>
+</body>
 </html>

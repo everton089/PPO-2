@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar prova - Aprova IF</title>
+  <link rel="stylesheet" href="/css/reset.css"><link rel="stylesheet" href="/css/variables.css"><link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/components/header.css"><link rel="stylesheet" href="/css/components/buttons.css"><link rel="stylesheet" href="/css/components/forms.css">
+  <style>
+    main{padding:110px 0 70px}.wrap{max-width:900px;margin:auto}.panel{background:white;border:1px solid var(--border);border-radius:20px;padding:28px;margin:20px 0}.panel h2{margin-bottom:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.form-group input,.form-group select,.form-group textarea{box-sizing:border-box;width:100%;padding:12px 14px;border:1px solid #d7dce5;border-radius:10px;font:inherit}.form-group textarea{min-height:90px;resize:vertical}.question{border:1px solid #e1e5eb;border-radius:14px;padding:18px;margin:14px 0}.question-image-preview{display:none;max-width:100%;max-height:320px;object-fit:contain;border:1px solid #e1e5eb;border-radius:10px;margin-top:10px}.answer{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.answer input[type=radio]{width:auto}.hint{color:#657080;font-size:.92rem}.message{padding:12px;border-radius:10px;margin:15px 0;white-space:pre-wrap}.success{background:#e8f7ed;color:#176536}.error{background:#fff0f0;color:#9a2020}.hidden{display:none}@media(max-width:600px){.panel{padding:18px}}
+  </style>
+</head>
+<body>
+<header class="header"><div class="container header-container"><a class="logo" href="/"><div class="logo-square">A</div><div><h2>Aprova IF</h2><span>Instituto Federal Catarinense</span></div></a><nav class="navbar"><a href="/">Início</a><a href="/simulados">Provas</a><a href="/estatisticas">Estatísticas</a></nav></div></header>
+<main><div class="container wrap"><h1>Cadastrar uma prova</h1><p class="hint">Cadastre uma prova e suas questões. Provas oficiais só podem ser publicadas com as credenciais do administrador.</p>
+<form id="provaForm">
+  <section class="panel"><h2>Informações da prova</h2>
+    <div class="form-group"><label for="titulo">Título da prova *</label><input id="titulo" required maxlength="150" placeholder="Ex.: Processo seletivo IFC 2025"></div>
+    <div class="grid"><div class="form-group"><label for="ano">Ano</label><input id="ano" type="number" min="2000" max="2100" placeholder="2025"></div><div class="form-group"><label for="tipo">Tipo de prova *</label><select id="tipo" required><option value="personalizada">Personalizada</option><option value="oficial">Oficial do IFC</option></select></div><div class="form-group"><label for="curso">Curso</label><input id="curso" maxlength="120" placeholder="Ex.: Técnico em Informática"></div><div class="form-group"><label for="campus">Campus</label><input id="campus" maxlength="120" placeholder="Ex.: Camboriú"></div></div>
+    <div id="adminFields" class="hidden"><h3>Verificação de administrador</h3><p class="hint">Informe o e-mail e a senha da conta configurada como administradora.</p><div class="grid"><div class="form-group"><label for="adminEmail">E-mail do administrador</label><input id="adminEmail" type="email" autocomplete="username"></div><div class="form-group"><label for="adminSenha">Senha do administrador</label><input id="adminSenha" type="password" autocomplete="current-password"></div></div></div>
+  </section>
+  <section class="panel"><h2>Questões</h2><p class="hint">Cada questão precisa ter quatro alternativas e exatamente uma resposta correta.</p><div id="questions"></div><button type="button" class="btn btn-secondary" id="addQuestion">+ Adicionar questão</button></section>
+  <div id="message" role="status" aria-live="polite"></div><button class="btn btn-primary" id="saveButton" type="submit">Salvar prova</button>
+</form></div></main>
+<script src="/js/cadastrar-prova.js"></script>
+</body></html>

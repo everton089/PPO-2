@@ -1,144 +1,64 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Simulados - Aprova IF</title>
-
-    <link rel="stylesheet" href="/css/reset.css" />
-    <link rel="stylesheet" href="/css/variables.css" />
-    <link rel="stylesheet" href="/css/global.css" />
-
-    <link rel="stylesheet" href="/css/components/header.css" />
-    <link rel="stylesheet" href="/css/components/buttons.css" />
-    <link rel="stylesheet" href="/css/components/cards.css" />
-
-    <link rel="stylesheet" href="/css/pages/simulados.css" />
-  </head>
-
-  <body>
-    <header class="header">
-      <div class="container header-container">
-        <div class="logo">
-          <div class="logo-square">A</div>
-
-          <div>
-            <h2>Aprova IF</h2>
-
-            <span> Instituto Federal Catarinense </span>
-          </div>
-        </div>
-
-        <nav class="navbar">
-          <a href="/">Início</a>
-
-          <a href="/estatisticas"> Estatisticas </a>
-
-          <a href="/ranking"> Ranking </a>
-        </nav>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Encontre provas oficiais do IFC, faça simulados e acompanhe seus resultados no Aprova IF.">
+  <title>Provas e simulados - Aprova IF</title>
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/components/header.css">
+  <link rel="stylesheet" href="/css/components/buttons.css">
+  <link rel="stylesheet" href="/css/components/cards.css">
+  <link rel="stylesheet" href="/css/pages/simulados.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+  <div class="container header-container">
+    <a class="logo" href="/"><div class="logo-square">A</div><div><h2>Aprova IF</h2><span>Instituto Federal Catarinense</span></div></a>
+    <nav class="navbar" aria-label="Navegação principal"><a href="/">Início</a><a href="/simulados" aria-current="page">Provas</a><a href="/estatisticas">Estatísticas</a><a href="/ranking">Ranking</a></nav>
+    <div class="header-actions"><a href="/login" class="btn btn-secondary">Entrar</a><a href="/cadastro" class="btn btn-primary">Criar conta</a></div>
+  </div>
+</header>
+<main>
+  <section class="page-hero"><div class="container hero-inner"><span class="eyebrow">BANCO DE PROVAS</span><h1>Prepare-se para o IFC.</h1><p>Encontre provas oficiais, pratique com simulados e acompanhe sua evolução. Você pode começar sem criar uma conta.</p><div class="hero-stats"><div><strong id="totalProvas">—</strong><span>provas disponíveis</span></div><div><strong>100%</strong><span>gratuito para praticar</span></div></div></div></section>
+  <section class="content-section container">
+    <div class="section-heading"><div><span class="eyebrow green">EXPLORE</span><h2>Encontre sua próxima prova</h2><p>Filtre por ano, curso ou campus para encontrar o que procura.</p></div><a class="btn btn-secondary" href="/cadastrar-prova">Cadastrar prova</a></div>
+    <div class="filter-panel">
+      <div class="search-wrap"><label for="search">Buscar</label><input id="search" type="search" placeholder="Nome da prova ou palavra-chave"></div>
+      <div><label for="filterTipo">Tipo</label><select id="filterTipo"><option value="">Todos os tipos</option><option value="oficial">Provas oficiais</option><option value="simulado">Simulados</option><option value="personalizada">Personalizadas</option></select></div>
+      <div><label for="filterAno">Ano</label><select id="filterAno"><option value="">Todos os anos</option></select></div>
+      <div><label for="filterCurso">Curso</label><select id="filterCurso"><option value="">Todos os cursos</option></select></div>
+      <div><label for="filterCampus">Campus</label><select id="filterCampus"><option value="">Todos os campi</option></select></div>
+      <button id="clearFilters" class="btn btn-secondary clear-btn" type="button">Limpar</button>
+    </div>
+    <div class="results-meta"><span id="resultsCount">Carregando provas…</span><span id="listMessage" role="status"></span></div>
+    <div id="proofList" class="proof-grid" aria-live="polite"></div>
+    <div id="emptyState" class="empty-state hidden"><div class="empty-icon">⌕</div><h3>Nenhuma prova encontrada</h3><p>Tente mudar os filtros ou crie um simulado com as questões disponíveis.</p></div>
+  </section>
+  <section class="custom-section"><div class="container custom-layout">
+    <div class="custom-copy"><span class="eyebrow">DO SEU JEITO</span><h2>Monte um simulado personalizado</h2><p>Escolha as matérias e o nível de dificuldade. O Aprova IF selecionará questões do banco de dados para você praticar.</p><ul><li>Escolha as matérias</li><li>Defina o número de questões</li><li>Veja sua pontuação ao terminar</li></ul></div>
+    <form id="customForm" class="custom-card">
+      <h3>Configurar simulado</h3><p class="muted">Selecione uma ou mais matérias.</p>
+      <div class="subjects-grid">
+        <label><input type="checkbox" name="materia" value="Matemática"> Matemática</label>
+        <label><input type="checkbox" name="materia" value="Português"> Português</label>
+        <label><input type="checkbox" name="materia" value="História"> História</label>
+        <label><input type="checkbox" name="materia" value="Geografia"> Geografia</label>
+        <label><input type="checkbox" name="materia" value="Ciências"> Ciências</label>
+        <label><input type="checkbox" name="materia" value="Física"> Física</label>
+        <label><input type="checkbox" name="materia" value="Química"> Química</label>
+        <label><input type="checkbox" name="materia" value="Biologia"> Biologia</label>
       </div>
-    </header>
-
-    <main>
-      <section class="page-hero">
-        <div class="container">
-          <span class="badge"> Banco de Provas </span>
-
-          <h1>Escolha um Simulado</h1>
-
-          <p>Resolva provas oficiais do IFC ou monte seu próprio desafio.</p>
-        </div>
-      </section>
-
-      <section class="years-section">
-        <div class="container">
-          <div class="section-header">
-            <h2>Provas Oficiais IFC</h2>
-          </div>
-
-          <div class="years-grid">
-            <a href="#" class="year-card">2025</a>
-            <a href="#" class="year-card">2024</a>
-            <a href="#" class="year-card">2023</a>
-            <a href="#" class="year-card">2022</a>
-
-            <a href="#" class="year-card">2021</a>
-            <a href="#" class="year-card">2020</a>
-            <a href="#" class="year-card">2019</a>
-            <a href="#" class="year-card">2018</a>
-
-            <a href="#" class="year-card">2017</a>
-            <a href="#" class="year-card">2016</a>
-            <a href="#" class="year-card">2015</a>
-            <a href="#" class="year-card">2014</a>
-
-            <a href="#" class="year-card">2013</a>
-            <a href="#" class="year-card">2012</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="custom-section">
-        <div class="container">
-          <div class="custom-card">
-            <h2>Criar Simulado Personalizado</h2>
-
-            <div class="subjects-grid">
-              <label>
-                <input type="checkbox" />
-                Matemática
-              </label>
-
-              <label>
-                <input type="checkbox" />
-                Português
-              </label>
-
-              <label>
-                <input type="checkbox" />
-                História
-              </label>
-
-              <label>
-                <input type="checkbox" />
-                Geografia
-              </label>
-
-              <label>
-                <input type="checkbox" />
-                Ciências
-              </label>
-            </div>
-
-            <div class="form-row">
-              <div>
-                <label> Quantidade de Questões </label>
-
-                <select>
-                  <option>10</option>
-                  <option>20</option>
-                  <option>30</option>
-                  <option>40</option>
-                </select>
-              </div>
-
-              <div>
-                <label> Dificuldade </label>
-
-                <select>
-                  <option>Fácil</option>
-                  <option>Média</option>
-                  <option>Difícil</option>
-                </select>
-              </div>
-            </div>
-
-            <button class="btn btn-primary">Gerar Simulado</button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </body>
-</html>
+      <div class="form-row"><div><label for="quantity">Quantidade</label><select id="quantity"><option value="5">5 questões</option><option value="10" selected>10 questões</option><option value="20">20 questões</option><option value="30">30 questões</option><option value="40">40 questões</option></select></div><div><label for="difficulty">Dificuldade</label><select id="difficulty"><option value="">Todas</option><option value="1">Fácil</option><option value="2">Média</option><option value="3">Difícil</option></select></div></div>
+      <button class="btn btn-primary full-btn" id="generateButton" type="submit">Gerar meu simulado <span aria-hidden="true">→</span></button><p id="customMessage" class="form-message" role="status"></p>
+    </form>
+  </div></section>
+  <section class="history-section container"><div class="section-heading"><div><span class="eyebrow green">SEU PROGRESSO</span><h2>Histórico de resultados</h2><p>Suas tentativas ficam salvas neste navegador, mesmo sem login.</p></div><button id="refreshHistory" class="btn btn-secondary" type="button">Atualizar histórico</button></div><div id="historyList" class="history-list"><p class="muted">Carregando histórico…</p></div></section>
+  <section id="examOverlay" class="exam-overlay hidden" aria-modal="true" role="dialog" aria-labelledby="examTitle"><div class="exam-dialog"><div class="exam-top"><div><span class="eyebrow green">MODO DE RESOLUÇÃO</span><h2 id="examTitle">Prova</h2><p id="examMeta" class="muted"></p></div><button type="button" id="closeExam" class="icon-button" aria-label="Fechar prova">×</button></div><div id="examProgress" class="progress-track"><span></span></div><form id="examForm"><div id="questionList"></div><div class="exam-actions"><span id="answerProgress" class="muted">0 respostas</span><button class="btn btn-primary" id="submitExam" type="submit">Finalizar e ver resultado</button></div></form><div id="examResult" class="exam-result hidden" aria-live="polite"></div></div></section>
+</main>
+<footer class="site-footer"><div class="container"><strong>Aprova IF</strong><span>Feito para apoiar sua preparação para o IFC.</span></div></footer>
+<script src="/js/simulados.js"></script>
+</body></html>
